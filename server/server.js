@@ -8,8 +8,9 @@ require('./config/config');
 //middle wear
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(require('./routes/usuario'));
 
+//configuracion global de rutas
+app.use(require('./routes/index'));
 
 app.get('/', function (req, res) {
   res.json('Hello World')

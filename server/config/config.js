@@ -15,6 +15,12 @@ if(process.env.NODE_ENV === 'dev'){
 }
 
 
+//TOKEN
+//vigencia de 1 mes
+process.env.CADUCIDAD_TOKEN = 60 * 60 * 24 * 30;
+//firma de var config heroku o hardcode para generar tokens.
+process.env.SEED = process.env.SEED || 'este-es-el-sing';
 
+process.env.USER_MANAGER_ROLE = 'ADMIN_ROLE';
 
 process.env.URLDB = urlDB;

@@ -3,36 +3,42 @@ const app = express()
 const Usuario = require('../models/usuario')
 const bcrypt = require('bcrypt');
 const _ = require('underscore')
+const { verificaToken, verificaRol } =  require('../middlewares/autenticacion');
 
-app.get('/usuario', function (req, res) {
-let desde = Number(req.query.desde || 0);
-let hasta = Number(req.query.hasta || 5);
+//cada vez q hago un get, se ejecuta el middleware
+app.get('/usuario', verificaToken, (req, res)  => {
 
-//Usuario.find({google:true}) filtro por google = true
-let filtro = {estado:true};
- Usuario.find(filtro, 'nombre email role google estado')
- .skip(desde) /* salta los 5 registros por get */
- .limit(hasta) /* 5 registros por get */
- .exec((err, usuarios) => {
-    
-    if(err){
-        return res.status(400).json({ok: false, err});
-    }else{
-        //usuarioDB.password = null;
-        Usuario.count(filtro, (err, cantidad) =>{
-            return res.json(
-                {
-                    ok: true, 
-                    usuarios,
-                    cantidad
-                });
-        })
+    //esto es loq ue viene en el payload del token luego del middle verificaToken 
+    //return res.json(req.usuario);
+
+    let desde = Number(req.query.desde || 0);
+    let hasta = Number(req.query.hasta || 5);
+
+    //Usuario.find({google:true}) filtro por google = true
+    let filtro = {estado:true};
+    Usuario.find(filtro, 'nombre email role google estado')
+    .skip(desde) /* salta los 5 registros por get */
+    .limit(hasta) /* 5 registros por get */
+    .exec((err, usuarios) => {
         
-    }
- });     
+        if(err){
+            return res.status(400).json({ok: false, err});
+        }else{
+            //usuarioDB.password = null;
+            Usuario.count(filtro, (err, cantidad) =>{
+                return res.json(
+                    {
+                        ok: true, 
+                        usuarios,
+                        cantidad
+                    });
+            })
+            
+        }
+    });     
 })
 
- app.post('/usuario', function (req, res) {
+ app.post('/usuario', [verificaToken, verificaRol],  (req, res) => {
     //req.body es lo que parseo el body parser.
     let body = req.body;
     //console.log(body);
@@ -56,7 +62,7 @@ let filtro = {estado:true};
     })
 })
 
-app.put('/usuario/:id', function (req, res) {
+app.put('/usuario/:id', [verificaToken, verificaRol],  (req, res) => {
     //el :id aparece en params, si es otro nombre, aparece otro nombre.
     let id = req.params.id;
     //una forma de quitar el pass y el role para que no se modifiquen es:
@@ -82,7 +88,7 @@ app.put('/usuario/:id', function (req, res) {
     
 })
 
-app.delete('/usuario/fisico/:id', function (req, res) {
+app.delete('/usuario/fisico/:id', [verificaToken, verificaRol],  (req, res) =>{
     let id = req.params.id;
     Usuario.findByIdAndRemove(id, (err, usuarioBorrado) =>{
         if(err){
@@ -98,7 +104,7 @@ app.delete('/usuario/fisico/:id', function (req, res) {
     })
 })
 
-app.delete('/usuario/:id', function (req, res) {
+app.delete('/usuario/:id', [verificaToken, verificaRol],  (req, res) => {
     let id = req.params.id;
     let optionsMongoose = {
         new: true, 
